@@ -1,0 +1,1 @@
+pgsql_conf = {'dbname': 'cs5344', 'user': 'spark', 'password': 'password'}
