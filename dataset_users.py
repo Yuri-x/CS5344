@@ -8,8 +8,6 @@ def remove_duplicate(string):
     if not string:
         return list()
     ret = []
-    if string[-1] == ',':
-        string = string[:-1]
     for each in set(string.split(", ")):
         e = each.strip().strip("'")
         if e:
@@ -20,10 +18,10 @@ def remove_duplicate(string):
 spark = SparkSession.builder \
     .appName("dataset_tweets")\
     .master("local[16]")\
-    .config("spark.driver.memory", "16G")\
+    .config("spark.driver.memory", "16G") \
     .config("spark.driver.maxResultSize", "8G") \
-    .config("spark.jars.packages", "com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.4")\
-    .config("spark.kryoserializer.buffer.max", "500m")\
+    .config("spark.jars", r"J:\spark-2.4.5-bin-hadoop2.7\drivers\postgresql-42.2.11.jar") \
+    .config("spark.kryoserializer.buffer.max", "500m") \
     .getOrCreate()
 
 df = spark.read \
@@ -37,17 +35,13 @@ df = spark.read \
 
 df = df.groupBy('is_validation', 'sponsoring_country', 'userid') \
             .agg(
-                 F.collect_set('user_profile_url').alias('user_profile_urls'),
-                 F.collect_set('in_reply_to_userid').alias('in_reply_to_userids'),
-                 F.collect_set('in_reply_to_tweetid').alias('in_reply_to_tweetids'),
-                 F.collect_set('quoted_tweet_tweetid').alias('quoted_tweet_tweetid'),
-                 F.collect_set('retweet_userid').alias('retweet_userid'),
-                 F.collect_set('retweet_tweetid').alias('retweet_tweetid'),
                  remove_duplicate(F.concat_ws(", ", F.collect_set('hashtags'))).alias('hashtags'),
-                 remove_duplicate(F.concat_ws(", ", F.collect_set('urls'))).alias('urls'),
-                 remove_duplicate(F.concat_ws(", ", F.collect_set('user_mentions'))).alias('user_mentions'),
+                 remove_duplicate(F.concat_ws(", ", F.concat_ws(", ", F.collect_set('urls')), F.concat_ws(", ", F.collect_set('user_profile_url')))).alias('urls'),
+                 remove_duplicate(F.concat_ws(", ", F.concat_ws(", ", F.collect_set('in_reply_to_tweetid')), F.concat_ws(", ", F.collect_set('quoted_tweet_tweetid')), F.concat_ws(", ", F.collect_set('retweet_tweetid')), F.concat_ws(", ", F.collect_set('tweetid')))).alias('related_tweetids'),
+                 remove_duplicate(F.concat_ws(", ", F.concat_ws(", ", F.collect_set('user_mentions')), F.concat_ws(", ", F.collect_set('in_reply_to_userid')), F.concat_ws(", ", F.collect_set('retweet_userid')), F.concat_ws(", ", F.collect_set('userid')))).alias('related_userids'),
             )
 
-df.write.parquet('dataset_users.parquet')
+df.write.parquet('users_combined.parquet')
+df.show(10, False)
 
 
