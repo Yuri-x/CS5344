@@ -19,17 +19,16 @@ spark = SparkSession.builder \
     .config("spark.kryoserializer.buffer.max", "500m")\
     .getOrCreate()
 
-# df = spark.read \
-#     .format("jdbc") \
-#     .option("url", "jdbc:postgresql://localhost:5432/cs5344") \
-#     .option("dbtable", "dataset_tweets") \
-#     .option("user", "spark") \
-#     .option("password", "password") \
-#     .option("driver", "org.postgresql.Driver") \
-#     .load() \
-#     .write.parquet('tweets_cache.parquet')
+df = spark.read \
+    .format("jdbc") \
+    .option("url", "jdbc:postgresql://localhost:5432/cs5344") \
+    .option("dbtable", "dataset_tweets") \
+    .option("user", "spark") \
+    .option("password", "password") \
+    .option("driver", "org.postgresql.Driver") \
+    .load()
 
-df = spark.read.parquet('tweets_cache.parquet').repartition(24)
+# df = spark.read.parquet('tweets_cache.parquet').repartition(24)
 
 document = DocumentAssembler()\
     .setInputCol("tweet_text")\
@@ -38,12 +37,6 @@ document = DocumentAssembler()\
 use = UniversalSentenceEncoder.pretrained() \
  .setInputCols(["document"])\
  .setOutputCol("embeddings")
-
-# finisher = Finisher() \
-#     .setInputCols(["sentence_embeddings"]) \
-#     .setOutputCols(["embeddings"]) \
-#     .setOutputAsArray(True) \
-#     .setCleanAnnotations(True)
 
 nlp_pipeline = Pipeline(stages=[document, use])
 nlp_model = nlp_pipeline.fit(df)
