@@ -11,7 +11,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # df = sqlContext.read.parquet('dataset_users.parquet')
-df = spark.read.parquet('tweets_use.parquet')
+df = spark.read.parquet('users_combined.parquet')
 df.show(20, False)
 df.printSchema()
 

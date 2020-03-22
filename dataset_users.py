@@ -8,10 +8,9 @@ def remove_duplicate(string):
     if not string:
         return list()
     ret = []
-    for each in set(string.split(", ")):
-        e = each.strip().strip("'")
-        if e:
-            ret.append(e)
+    for each in set(x.lower().strip().strip("'") for x in string.split(", ")):
+        if each:
+            ret.append(each)
     return ret
 
 
