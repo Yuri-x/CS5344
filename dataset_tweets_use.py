@@ -26,8 +26,7 @@ spark = SparkSession.builder \
 #     .option("user", "spark") \
 #     .option("password", "password") \
 #     .option("driver", "org.postgresql.Driver") \
-#     .load() \
-#     .write.parquet('tweets_cache.parquet')
+#     .load()
 
 df = spark.read.parquet('tweets_cache.parquet').repartition(24)
 
@@ -39,18 +38,12 @@ use = UniversalSentenceEncoder.pretrained() \
  .setInputCols(["document"])\
  .setOutputCol("embeddings")
 
-# finisher = Finisher() \
-#     .setInputCols(["sentence_embeddings"]) \
-#     .setOutputCols(["embeddings"]) \
-#     .setOutputAsArray(True) \
-#     .setCleanAnnotations(True)
-
 nlp_pipeline = Pipeline(stages=[document, use])
 nlp_model = nlp_pipeline.fit(df)
 processed = nlp_model.transform(df)
-processed = processed.withColumn("embeddings", F.col("embeddings").getItem(0)["embeddings"]) \
-    .select('sponsoring_country', 'tweetid', 'userid', 'tweet_text', 'is_validation', 'embeddings')
-processed.write.parquet('tweets_use.parquet')
+processed = processed.select('sponsoring_country', 'tweetid', 'userid', 'tweet_text', 'is_validation',
+                             F.col("embeddings").getItem(0)["embeddings"].alias('embeddings'))
+processed.write.parquet('tweets_use_lg.parquet')
 processed.show(10, False)
 
 

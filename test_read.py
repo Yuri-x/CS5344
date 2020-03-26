@@ -1,7 +1,4 @@
-from pyspark import SparkConf, SparkContext
-import pyspark.sql.functions as F
-import pyspark.sql.types as T
-from pyspark.sql import SQLContext, DataFrameReader, SparkSession
+from pyspark.sql import SparkSession
 
 
 spark = SparkSession.builder \
@@ -14,8 +11,8 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # df = sqlContext.read.parquet('dataset_users.parquet')
-df = spark.read.parquet('tweets_use.parquet')
+df = spark.read.parquet('users_combined.parquet')
 df.show(20, False)
 df.printSchema()
-print(f"fuck: {df.count()}")
+
 

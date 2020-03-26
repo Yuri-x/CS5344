@@ -159,8 +159,8 @@ def string_to_array(string: str):
 
 
 if __name__ == '__main__':
-    # rename_table()
-    # for target, cols in [('tweets', TWEET_COLS), ('users', USER_COLS)]:
-    #     combine_table(target, cols, f"combined_{target}")
+    rename_table()
+    for target, cols in [('tweets', TWEET_COLS), ('users', USER_COLS)]:
+        combine_table(target, cols, f"combined_{target}")
     clean_data(['china', 'iran', 'russia', 'venezuela'])
 

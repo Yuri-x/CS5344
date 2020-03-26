@@ -29,8 +29,7 @@ df = spark.read \
     .option("user", "spark") \
     .option("password", "password") \
     .option("driver", "org.postgresql.Driver") \
-    .load() \
-    .write.parquet('tweets_cache.parquet')
+    .load()
 
 # df = spark.read.parquet('tweets_cache.parquet').repartition(24)
 
