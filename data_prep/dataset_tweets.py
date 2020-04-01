@@ -31,8 +31,6 @@ df = spark.read \
     .option("driver", "org.postgresql.Driver") \
     .load()
 
-# df = spark.read.parquet('tweets_cache.parquet').repartition(24)
-
 document_assembler = DocumentAssembler() \
     .setInputCol("tweet_text") \
     .setOutputCol("document")
