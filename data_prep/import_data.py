@@ -1,10 +1,10 @@
-from config import pgsql_conf
+from data_prep.config import pgsql_conf
 from koala.connector import PGSQLConnector
 import os
 
 if __name__ == '__main__':
     conn = PGSQLConnector(pgsql_conf)
-    with open('exception.log', 'w') as f:
+    with open('../exception.log', 'w') as f:
         for folder in ('tweets', 'users'):
             for file in os.listdir(folder):
                 path = os.path.join(folder, file)
