@@ -12,8 +12,8 @@ from pyspark.ml import Pipeline
 spark = SparkSession.builder \
     .appName("dataset_tweets")\
     .master("local[24]")\
-    .config("spark.driver.memory", "8G")\
-    .config("spark.driver.maxResultSize", "4G") \
+    .config("spark.driver.memory", "16G")\
+    .config("spark.driver.maxResultSize", "64G") \
     .config("spark.executor.cores", "8") \
     .config("spark.jars.packages", "com.johnsnowlabs.nlp:spark-nlp_2.11:2.4.4")\
     .config("spark.kryoserializer.buffer.max", "500m")\
@@ -30,21 +30,31 @@ spark = SparkSession.builder \
 
 df = spark.read.parquet('tweets_cache.parquet').repartition(24)
 
+train_set = df.filter(df['is_validation'] == False)
+val_set = df.filter(df['is_validation'] == True)
+
 document = DocumentAssembler()\
     .setInputCol("tweet_text")\
     .setOutputCol("document")
 
 use = UniversalSentenceEncoder.pretrained() \
- .setInputCols(["document"])\
- .setOutputCol("embeddings")
+    .setInputCols(["document"])\
+    .setOutputCol("sentence_embeddings")
 
-nlp_pipeline = Pipeline(stages=[document, use])
-nlp_model = nlp_pipeline.fit(df)
-processed = nlp_model.transform(df)
-processed = processed.select('sponsoring_country', 'tweetid', 'userid', 'tweet_text', 'is_validation',
-                             F.col("embeddings").getItem(0)["embeddings"].alias('embeddings'))
-processed.write.parquet('tweets_use_lg.parquet')
-processed.show(10, False)
+classsifierdl = ClassifierDLApproach()\
+    .setInputCols(["sentence_embeddings"])\
+    .setOutputCol("class")\
+    .setLabelColumn("sponsoring_country")\
+    .setMaxEpochs(10)\
+    .setEnableOutputLogs(True)
+
+pipeline = Pipeline(stages=[document, use, classsifierdl])
+nlp_model = pipeline.fit(train_set)
+predictions = nlp_model.transform(val_set)
+result = predictions.select('sponsoring_country', 'tweetid', 'userid', "class.result")
+
+result.write.parquet('tweets_use_result.parquet')
+result.show(10, False)
 
 
 

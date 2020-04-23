@@ -1,6 +1,6 @@
 import io
 import typing
-from config import pgsql_conf
+from data_prep.config import pgsql_conf
 from koala.connector import PGSQLConnector
 import math
 import random
