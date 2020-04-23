@@ -40,8 +40,8 @@ dfTestRelatedUsers = dfTest.select(col("userid"),
 	col("related_userids"))
 
 model = Pipeline(stages=[
-	HashingTF(inputCol="combined", outputCol="hashes"),
-	MinHashLSH(inputCol="hashes", outputCol="lsh")]).fit(dfTrainTweets)
+	HashingTF(inputCol="combined", outputCol="vectors"),
+	MinHashLSH(inputCol="vectors", outputCol="lsh")]).fit(dfTrainTweets)
 
 trainTweetsHashed = model.transform(dfTrainTweets)
 testTweetsHashed = model.transform(dfTestTweets)
@@ -51,8 +51,8 @@ combined = model.stages[-1].approxSimilarityJoin(trainTweetsHashed, testTweetsHa
 combined.write.parquet('combined_hashed.parquet')
 
 model2 = Pipeline(stages=[
-	HashingTF(inputCol="related_userids", outputCol="hashes"),
-	MinHashLSH(inputCol="hashes", outputCol="lsh")]).fit(dfTrainRelatedUsers)
+	HashingTF(inputCol="related_userids", outputCol="vectors"),
+	MinHashLSH(inputCol="vectors", outputCol="lsh")]).fit(dfTrainRelatedUsers)
 
 trainUsersHashed = model2.transform(dfTrainRelatedUsers)
 testUsersHashed = model2.transform(dfTestRelatedUsers)
